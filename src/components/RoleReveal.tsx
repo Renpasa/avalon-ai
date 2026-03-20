@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { Player } from '../types/avalon';
 import { ROLE_LABELS } from '../types/avalon';
-import { Eye, EyeOff, Shield, Skull } from 'lucide-react';
+import { Eye, EyeOff, Shield, Skull, ArrowRight } from 'lucide-react';
+import CharacterCard from './CharacterCard';
 
 interface Props {
   players: Player[];
@@ -16,105 +17,108 @@ export default function RoleReveal({ players, humanIndex, onContinue }: Props) {
   const isGood = human.side === 'good';
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-slate-200">夜晚階段 · Night Phase</h2>
-        <p className="text-sm text-slate-400">確認你的角色與視野</p>
+    <div className="mx-auto max-w-4xl space-y-12 py-10 animate-in fade-in duration-700">
+      <div className="text-center space-y-3">
+        <h2 className="text-3xl font-black tracking-widest text-slate-100 uppercase italic">
+          夜晚階段 <span className="text-amber-500">Night Phase</span>
+        </h2>
+        <p className="text-slate-500 font-medium tracking-wider">確認你的身份與潛伏的勢力</p>
+        <div className="h-px w-32 bg-gradient-to-r from-transparent via-slate-700 to-transparent mx-auto" />
       </div>
 
-      {/* Role card */}
-      <div
-        className={`relative overflow-hidden rounded-2xl border p-8 text-center backdrop-blur transition-all duration-500 ${
-          revealed
-            ? isGood
-              ? 'border-blue-500/50 bg-blue-500/10'
-              : 'border-red-500/50 bg-red-500/10'
-            : 'border-slate-700 bg-slate-800/60'
-        }`}
-      >
-        {!revealed ? (
-          <button
-            onClick={() => setRevealed(true)}
-            className="flex flex-col items-center gap-4 mx-auto text-slate-400 hover:text-slate-200 transition"
-          >
-            <EyeOff size={48} className="opacity-40" />
-            <span className="text-lg font-medium">點擊揭示身份</span>
-            <span className="text-sm text-slate-500">Click to reveal your role</span>
-          </button>
-        ) : (
-          <div className="space-y-4 animate-in fade-in duration-500">
-            <div className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold ${
-              isGood ? 'bg-blue-500/20 text-blue-300' : 'bg-red-500/20 text-red-300'
-            }`}>
-              {isGood ? <Shield size={14} /> : <Skull size={14} />}
-              {isGood ? '正義陣營' : '邪惡陣營'}
+      <div className="flex flex-col md:flex-row gap-10 items-center justify-center">
+        {/* Main Role Card Container */}
+        <div className="flex flex-col items-center space-y-8">
+          <div className="relative">
+            <CharacterCard
+              role={human.role}
+              side={human.side}
+              revealed={revealed}
+              onClick={() => setRevealed(true)}
+            />
+          </div>
+
+          {!revealed && (
+            <div className="text-center animate-pulse">
+              <p className="text-amber-500 font-bold text-sm tracking-widest uppercase">點擊牌面揭示身份</p>
+              <EyeOff className="mx-auto mt-2 text-amber-600/50" size={24} />
             </div>
-            <h3 className="text-3xl font-bold text-white">
-              {ROLE_LABELS[human.role]}
-            </h3>
+          )}
+        </div>
+
+        {/* Vision & Info Panel */}
+        {revealed && (
+          <div className="flex-1 w-full max-w-md space-y-6 animate-in slide-in-from-right-8 fade-in duration-1000">
+            <div className="medieval-panel p-6 border-iron">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">你的陣營</p>
+                  <div className={`flex items-center gap-2 text-xl font-black ${isGood ? 'text-blue-400' : 'text-red-500'}`}>
+                    {isGood ? <Shield size={20} /> : <Skull size={20} />}
+                    {isGood ? '正義 (GOOD)' : '邪惡 (EVIL)'}
+                  </div>
+                </div>
+                <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center border border-white/5">
+                  <span className="text-lg font-black text-amber-500">{humanIndex}</span>
+                </div>
+              </div>
+
+              {/* Visibility List */}
+              <div className="space-y-4">
+                <h3 className="flex items-center gap-2 text-xs font-black text-slate-500 uppercase tracking-widest">
+                  <Eye size={14} className="text-amber-500" /> 你的視野資訊
+                </h3>
+
+                {human.visibleTo.length > 0 ? (
+                  <div className="grid gap-3">
+                    {human.visibleTo.map((targetId) => {
+                      const target = players[targetId];
+                      return (
+                        <div key={targetId} className="flex items-center justify-between p-4 rounded-2xl bg-slate-900/80 border border-white/5 group hover:border-amber-500/30 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
+                              {targetId}
+                            </div>
+                            <span className="font-bold text-slate-200">{target.name}</span>
+                          </div>
+                          <span className="px-3 py-1 rounded-lg bg-amber-500/10 text-amber-400 text-xs font-black uppercase tracking-tighter">
+                            {human.visibleLabels[targetId]}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-8 rounded-3xl border-2 border-dashed border-slate-800 text-center">
+                    <p className="text-slate-600 font-medium italic italic">你在黑夜中一無所獲...只能依靠直覺與推理。</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <button
+              onClick={onContinue}
+              className="w-full btn-primary group relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
+              <span className="flex items-center justify-center gap-3">
+                進入遊戲
+                <ArrowRight className="group-hover:translate-x-2 transition-transform" />
+              </span>
+            </button>
           </div>
         )}
       </div>
 
-      {/* Visibility info — only shown after reveal */}
-      {revealed && human.visibleTo.length > 0 && (
-        <div className="rounded-2xl border border-slate-700/60 bg-slate-800/40 p-6 backdrop-blur space-y-3">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-300">
-            <Eye size={14} /> 你的視野 (Your Vision)
-          </h3>
-          <div className="grid gap-2">
-            {human.visibleTo.map((targetId) => {
-              const target = players[targetId];
-              return (
-                <div
-                  key={targetId}
-                  className="flex items-center justify-between rounded-xl bg-slate-700/30 px-4 py-3"
-                >
-                  <span className="font-medium text-slate-200">{target.name}</span>
-                  <span className="text-sm text-amber-400/80 font-mono">
-                    {human.visibleLabels[targetId]}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* All players (no roles shown except self) */}
+      {/* Background reveal list */}
       {revealed && (
-        <div className="rounded-2xl border border-slate-700/60 bg-slate-800/40 p-6 backdrop-blur space-y-3">
-          <h3 className="text-sm font-semibold text-slate-300">所有玩家</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {players.map((p) => (
-              <div
-                key={p.id}
-                className={`rounded-xl px-4 py-3 text-sm ${
-                  p.id === humanIndex
-                    ? isGood
-                      ? 'bg-blue-500/15 text-blue-300 border border-blue-500/30'
-                      : 'bg-red-500/15 text-red-300 border border-red-500/30'
-                    : 'bg-slate-700/30 text-slate-400'
-                }`}
-              >
-                <span className="font-medium">{p.name}</span>
-                {p.id === humanIndex && (
-                  <span className="block text-xs opacity-60 mt-0.5">{ROLE_LABELS[p.role]}</span>
-                )}
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-5 md:grid-cols-10 gap-2 opacity-30 px-4">
+          {players.map(p => (
+            <div key={p.id} className={`p-2 rounded-lg text-center text-[10px] font-bold border ${p.id === humanIndex ? 'border-amber-500 bg-amber-500/10' : 'border-slate-800 bg-slate-900/50'}`}>
+              {p.name}
+            </div>
+          ))}
         </div>
-      )}
-
-      {/* Continue */}
-      {revealed && (
-        <button
-          onClick={onContinue}
-          className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 py-4 text-lg font-bold text-white shadow-xl shadow-indigo-500/20 transition hover:shadow-indigo-500/40 hover:brightness-110 active:scale-[0.98]"
-        >
-          確認 · Continue
-        </button>
       )}
     </div>
   );

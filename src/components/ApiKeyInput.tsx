@@ -7,6 +7,7 @@ export default function ApiKeyInput() {
   const [key, setKey] = useState('');
   const [masked, setMasked] = useState(true);
   const [saved, setSaved] = useState(false);
+  const [useMock, setUseMock] = useState(() => sessionStorage.getItem('USE_MOCK_LLM') === 'true');
 
   useEffect(() => {
     const stored = sessionStorage.getItem(STORAGE_KEY);
@@ -19,8 +20,15 @@ export default function ApiKeyInput() {
   const handleSave = () => {
     if (!key.trim()) return;
     sessionStorage.setItem(STORAGE_KEY, key.trim());
+    sessionStorage.setItem('USE_MOCK_LLM', useMock.toString());
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleToggleMock = () => {
+    const next = !useMock;
+    setUseMock(next);
+    sessionStorage.setItem('USE_MOCK_LLM', next.toString());
   };
 
   const display = masked && key
@@ -68,6 +76,14 @@ export default function ApiKeyInput() {
       {key && masked && (
         <p className="text-xs text-slate-500 font-mono">{display}</p>
       )}
+
+      <div className="flex items-center gap-3 mt-4">
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" className="sr-only peer" checked={useMock} onChange={handleToggleMock} />
+          <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+          <span className="ml-3 text-sm font-medium text-slate-300 text-indigo-300">啟用開發者 Mock 模式 (測試對話不消耗真實 API 額度)</span>
+        </label>
+      </div>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { assignRoles } from './engine/setup';
 import ApiKeyInput from './components/ApiKeyInput';
 import SetupScreen from './components/SetupScreen';
 import RoleReveal from './components/RoleReveal';
+import GameBoard from './components/GameBoard';
 
 type Phase = 'setup' | 'reveal' | 'game';
 
@@ -23,46 +24,61 @@ function App() {
     setPhase('game');
   };
 
+  const epicBg = "/assets/epic_bg.png";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
-        {/* API Key — always accessible at top */}
+    <div className="min-h-screen bg-zinc-950 text-stone-300 relative overflow-x-hidden">
+      {/* Dynamic Background */}
+      <div 
+        className="fixed inset-0 z-0 pointer-events-none"
+        style={{ 
+          backgroundImage: `url(${epicBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+      
+      {/* Dark Overlay as requested */}
+      <div className="fixed inset-0 z-0 bg-black/50 pointer-events-none" />
+
+      <main className="relative z-10 mx-auto max-w-7xl px-4 py-10 min-h-screen flex flex-col items-center">
+        {/* content wrapper */}
+        <div className="w-full">
+          {phase === 'setup' && <SetupScreen onStart={handleStart} />}
+
+          {phase === 'reveal' && config && (
+            <RoleReveal
+              players={players}
+              humanIndex={config.humanPlayerIndex}
+              onContinue={handleContinue}
+            />
+          )}
+
+          {phase === 'game' && config && (
+            <div className="w-full animate-in fade-in duration-1000">
+              <GameBoard players={players} config={config} onRestart={() => setPhase('setup')} />
+            </div>
+          )}
+        </div>
+
+        {/* API Key — Moved to the bottom in setup phase */}
         {phase === 'setup' && (
-          <div className="mb-10">
-            <ApiKeyInput />
-          </div>
-        )}
-
-        {phase === 'setup' && <SetupScreen onStart={handleStart} />}
-
-        {phase === 'reveal' && config && (
-          <RoleReveal
-            players={players}
-            humanIndex={config.humanPlayerIndex}
-            onContinue={handleContinue}
-          />
-        )}
-
-        {phase === 'game' && (
-          <div className="text-center space-y-4 py-20">
-            <h2 className="text-2xl font-bold text-slate-200">
-              🏰 遊戲進行中…
-            </h2>
-            <p className="text-slate-400 text-sm">Milestone 2 will implement the core game loop here.</p>
-            {/* Debug: show all roles */}
-            <div className="mt-8 rounded-2xl border border-slate-700/60 bg-slate-800/40 p-6 text-left">
-              <h3 className="text-sm font-semibold text-slate-300 mb-3">⚙ Debug: Role Assignments</h3>
-              <pre className="text-xs text-slate-400 font-mono overflow-x-auto">
-                {JSON.stringify(
-                  players.map((p) => ({ id: p.id, name: p.name, role: p.role, side: p.side })),
-                  null,
-                  2
-                )}
-              </pre>
+          <div className="w-full max-w-4xl mt-12 animate-in slide-in-from-bottom-4 duration-1000">
+            <div className="medieval-panel p-6 border-iron">
+               <ApiKeyInput />
             </div>
           </div>
         )}
-      </div>
+
+        {/* Subtle Footer */}
+        <footer className="mt-auto pt-20 pb-10 opacity-20 text-[10px] font-black tracking-[0.5em] uppercase text-center w-full">
+          Camelot AI Engine v2.0 • Eternal Shadow vs Sacred Light
+        </footer>
+      </main>
+
+      {/* Global Grain/Noise/Parchment Overlay for texture as requested */}
+      <div className="fixed inset-0 pointer-events-none opacity-40 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay z-50" />
+      <div className="fixed inset-0 pointer-events-none bg-[#f4ecd8] mix-blend-multiply opacity-30 z-40" />
     </div>
   );
 }

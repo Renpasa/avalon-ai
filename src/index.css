@@ -1,1 +1,94 @@
 @import "tailwindcss";
+
+@layer base {
+  body {
+    /* Base background is now the dark velvety/stone texture of Camelot */
+    @apply bg-zinc-950 text-stone-300 selection:bg-amber-900/50;
+    /* Primary font is Playfair for slightly decorative readability, headings will be Cinzel */
+    font-family: 'Playfair Display', serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cinzel', serif;
+  }
+}
+
+@layer components {
+  /* Replace glassmorphism with heavy medieval textures */
+  .medieval-panel {
+    @apply relative bg-zinc-900 border-2 border-zinc-800 shadow-[0_0_20px_rgba(212,175,55,0.4)] text-stone-300 overflow-hidden;
+  }
+
+
+  /* Distressed iron or dark metal borders */
+  .border-iron {
+    @apply border-zinc-800 ring-1 ring-black/50;
+  }
+
+  /* Luxurious royal red/gold accents */
+  .bg-royal-red {
+    @apply bg-red-950 border border-red-900;
+  }
+
+  /* Magical dark purple accents */
+  .bg-mystic-purple {
+    @apply bg-indigo-950 border border-indigo-900;
+  }
+
+  .btn-primary {
+    @apply relative px-8 py-3 bg-zinc-900 border-2 border-amber-900/50 text-amber-500 font-bold tracking-widest uppercase
+           shadow-[inset_0_0_15px_rgba(20,20,20,0.8),0_5px_15px_rgba(0,0,0,0.5)] transition-all duration-300
+           hover:border-amber-500 hover:text-amber-400 hover:bg-zinc-800 hover:shadow-[inset_0_0_15px_rgba(20,20,20,0.8),0_0_25px_rgba(245,158,11,0.2)] active:scale-95;
+    font-family: 'Cinzel', serif;
+  }
+
+  .btn-secondary {
+    @apply relative px-8 py-3 bg-zinc-950 border-2 border-zinc-800 font-bold text-stone-400 tracking-widest uppercase
+           transition-all duration-300
+           hover:border-zinc-600 hover:text-stone-200 active:scale-95;
+    font-family: 'Cinzel', serif;
+  }
+
+  .text-gradient-gold {
+    @apply bg-gradient-to-b from-amber-200 via-amber-500 to-amber-700 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)];
+  }
+
+  .text-gradient-silver {
+    @apply bg-gradient-to-b from-slate-200 via-slate-400 to-slate-600 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)];
+  }
+}
+
+/* Animations that fit a slower, heavier medieval theme */
+@keyframes flicker {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.02); }
+}
+
+@keyframes magical-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+.animate-flicker {
+  animation: flicker 4s ease-in-out infinite;
+}
+
+.animate-magical-float {
+  animation: magical-float 6s ease-in-out infinite;
+}
+
+/* 3D perspective for Tarot Cards */
+.card-perspective {
+  perspective: 1500px;
+}
+
+/* Scrollbar styling - old world style */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-zinc-950 border-l border-zinc-900;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-800 border border-zinc-700 rounded-full hover:bg-stone-700;
+}
