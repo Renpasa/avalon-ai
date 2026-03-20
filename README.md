@@ -1,73 +1,56 @@
-# React + TypeScript + Vite
+# 🗡️ Avalon AI: The Council of Deception
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Avalon AI** is a strategic social deduction game (based on The Resistance: Avalon) where you play alongside **LLM-powered AI agents**. Test your intuition against advanced AI that can propose teams, vote with strategic intent, and even attempt to assassinate Merlin.
 
-Currently, two official plugins are available:
+![Medieval Aesthetic](https://raw.githubusercontent.com/Renpasa/avalon-ai/master/public/assets/epic_bg.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🌟 Key Features
 
-## React Compiler
+- **Advanced AI Agents**: Powered by **Google Gemini**, every AI player has its own personality, reasoning logic, and strategic goals.
+- **Unified Dashboard**: A clean, single-screen "Council View" that integrates the Round Table, Chat, Action Panels, and Game Log—no scrolling required.
+- **Medieval Aesthetic**: Custom-crafted UI featuring parchment textures, iron borders, and Cinzel typography for an immersive dark fantasy experience.
+- **Real-time Logic**: A robust game engine that manages complex state transitions (Proposing -> Voting -> Mission -> Lake -> Assassination).
+- **Client-Side Security**: API Key is handled exclusively via `sessionStorage` and never persisted to disk or sent to a third-party server besides Google.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+- **Core**: React 18 + TypeScript + Vite
+- **Styling**: Tailwind CSS (Custom Medieval Theme)
+- **AI Engine**: Google Generative AI SDK (`@google/generative-ai`)
+- **Icons**: Lucide React
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 Quick Start
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Clone the repository
+```bash
+git clone https://github.com/Renpasa/avalon-ai.git
+cd avalon-ai
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 2. Install dependencies
+```bash
+npm install
 ```
+
+### 3. Run the development server
+```bash
+npm run dev
+```
+
+### 4. Setup API Key
+Once the app is running, enter your **Google Gemini API Key** in the setup screen. 
+> [!TIP]
+> You can also enable **Mock Mode** to test the game flow without consuming your API quota!
+
+## 📜 How to Play
+
+1. **Setup**: Choose the number of players (5-10) and enter your name.
+2. **The Goal**: 
+   - **Good Team**: Pass 3 missions and protect Merlin.
+   - **Evil Team**: Fail 3 missions or successfully assassinate Merlin at the game's end.
+3. **The Council**: Use the **Chat** to influence other players and look for patterns in the **Game Log**.
+
+---
+
+*Made with 🗡️ and 🤖 by Renpasa.*
+
