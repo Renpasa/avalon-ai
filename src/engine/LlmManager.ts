@@ -82,7 +82,7 @@ export class LlmManager {
 
       const prompt = task.type === 'single'
         ? buildSinglePrompt(task.targets[0], task.state, task.actionRequired, task.allPlayers, task.config)
-        : buildBatchPrompt(task.targets, task.state, task.actionRequired, task.allPlayers, task.config);
+        : buildBatchPrompt(task.targets, task.state, task.actionRequired, task.allPlayers);
 
       const maxRetries = 3;
       for (let i = 0; i <= maxRetries; i++) {

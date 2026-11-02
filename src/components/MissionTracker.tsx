@@ -25,23 +25,23 @@ export default function MissionTracker({ playerCount, currentRound, results }: P
         {sizes.map((size, index) => {
           const res = results[index];
           const isCurrent = currentRound === index;
-          const isUpcoming = index > currentRound;
+          
           const isFinished = res !== 'pending';
           const needsTwo = requiresTwoFails(playerCount, index);
 
           // Advanced circle styling
           let circleClass = 'border-2 transition-all duration-700 w-16 h-16 flex items-center justify-center rounded-2xl relative overflow-hidden';
-          let iconColor = 'text-slate-600';
+          
           
           if (res === 'success') {
             circleClass += ' bg-blue-600/10 border-blue-500 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.25)]';
-            iconColor = 'text-blue-400';
+            
           } else if (res === 'fail') {
             circleClass += ' bg-red-600/10 border-red-500 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.25)]';
-            iconColor = 'text-red-500';
+            
           } else if (isCurrent) {
             circleClass += ' bg-amber-500/10 border-amber-500 text-amber-400 shadow-[0_0_25px_rgba(245,158,11,0.3)] scale-110 z-10';
-            iconColor = 'text-amber-500';
+            
           } else {
             circleClass += ' bg-slate-900 border-slate-800 text-slate-500 opacity-40';
           }

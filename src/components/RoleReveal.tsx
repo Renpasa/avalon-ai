@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Player } from '../types/avalon';
-import { ROLE_LABELS } from '../types/avalon';
+
 import { Eye, EyeOff, Shield, Skull, ArrowRight } from 'lucide-react';
 import CharacterCard from './CharacterCard';
 

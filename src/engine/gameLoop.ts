@@ -1,5 +1,5 @@
 import type { GameConfig, Player, Side } from '../types/avalon';
-import type { GameState, GamePhase, GameActionEvent } from '../types/game';
+import type { GameState, GameActionEvent } from '../types/game';
 import { requiresTwoFails } from '../types/game';
 import { shouldTriggerLake } from './lake';
 import { initializeTrustMatrix, applyActionToTrustMatrix } from './ai';
