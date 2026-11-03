@@ -46,7 +46,7 @@ export function buildSinglePrompt(
   const side = ROLE_SIDE[player.role] === 'good' ? '正義 (Good)' : '邪惡 (Evil)';
   
   const knownPlayers = Object.entries(player.visibleLabels)
-    .filter(([_, label]) => label !== '未知 (Unknown)')
+    .filter(([, label]) => label !== '未知 (Unknown)')
     .map(([id, label]) => {
       const p = allPlayers.find(x => x.id === Number(id));
       return `- ${p?.name}: ${label}`;
@@ -132,8 +132,7 @@ export function buildBatchPrompt(
   targets: Player[],
   state: GameState,
   actionRequired: 'propose' | 'vote' | 'mission' | 'assassinate',
-  allPlayers: Player[],
-  config: GameConfig
+  allPlayers: Player[]
 ): string {
   const historyContext = state.gameHistory.slice(-3).map(h => JSON.stringify(h)).join('\n');
   const chatContext = state.chatHistory.slice(-5).map(c => {
@@ -145,7 +144,7 @@ export function buildBatchPrompt(
     const roleName = ROLE_LABELS[p.role];
     const side = ROLE_SIDE[p.role] === 'good' ? '正義 (Good)' : '邪惡 (Evil)';
     
-    const known = Object.entries(p.visibleLabels).filter(([id, label]) => label !== '未知 (Unknown)').map(([id, label]) => `- ${allPlayers.find(x=>x.id===Number(id))?.name}: ${label}`).join(', ');
+    const known = Object.entries(p.visibleLabels).filter(([, label]) => label !== '未知 (Unknown)').map(([id, label]) => `- ${allPlayers.find(x=>x.id===Number(id))?.name}: ${label}`).join(', ');
     const trust = allPlayers.map(x => x.id !== p.id ? `${x.name}:${state.trustMatrix[p.id][x.id].toFixed(2)}` : null).filter(Boolean).join(', ');
     return `
 --- Player ID: ${p.id} (${p.name}) ---

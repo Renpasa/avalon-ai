@@ -1,5 +1,5 @@
 import type { GameConfig, Player, Side } from '../types/avalon';
-import type { GameState, GamePhase, GameActionEvent } from '../types/game';
+import type { GameState, GameActionEvent } from '../types/game';
 import { requiresTwoFails } from '../types/game';
 import { shouldTriggerLake } from './lake';
 import { initializeTrustMatrix, applyActionToTrustMatrix } from './ai';
@@ -70,21 +70,17 @@ export function submitVotes(state: GameState, votes: Record<number, boolean>, co
       
       const evilWins = state.evilWins + 1;
       
-      let nextState = {
+      return {
         ...state,
         votes,
         rejectCount: newRejectCount,
         missionResults: newResults,
         evilWins,
         gameHistory,
-        trustMatrix
+        trustMatrix,
+        phase: 'finished',
+        winner: 'evil',
       };
-      
-      if (nextState.rejectCount >= 5) {
-        nextState.phase = 'finished';
-        nextState.winner = 'evil';
-      }
-      return nextState;
     } else {
       // Advance leader, stay in proposing
       return {
@@ -121,30 +117,48 @@ export function executeMission(state: GameState, cards: ('success' | 'fail')[], 
   const goodWins = isSuccess ? state.goodWins + 1 : state.goodWins;
   const evilWins = isSuccess ? state.evilWins : state.evilWins + 1;
   
-  let nextState = {
+  const nextState = {
     ...state,
     missionCards: cards,
     missionResults: newResults,
     goodWins,
     evilWins,
     gameHistory,
-    trustMatrix
+    trustMatrix,
   };
-  
-  const winner = checkWinCondition(nextState);
-  if (winner) {
-    return { ...nextState, winner, phase: 'finished' };
-  }
   
   return resolveRound(nextState, config, players);
 }
 
 // 4. Resolve round -> Lake OR next Proposing phase
 export function resolveRound(state: GameState, config: GameConfig, players: Player[]): GameState {
+  if (state.evilWins >= 3) {
+    return {
+      ...state,
+      phase: 'finished',
+      winner: 'evil',
+    };
+  }
+  if (state.goodWins >= 3) {
+    const hasAssassin = players.some(p => p.role === 'assassin');
+    if (hasAssassin) {
+      return {
+        ...state,
+        phase: 'assassination',
+      };
+    } else {
+      return {
+        ...state,
+        phase: 'finished',
+        winner: 'good',
+      };
+    }
+  }
+
   const nextRound = state.round + 1;
   const nextLeader = (state.leaderIndex + 1) % config.playerCount;
-  
-  let nextState = {
+
+  const nextState = {
     ...state,
     round: nextRound,
     leaderIndex: nextLeader,
@@ -153,26 +167,13 @@ export function resolveRound(state: GameState, config: GameConfig, players: Play
     votes: {},
     missionCards: [],
   };
-  
+
   if (shouldTriggerLake(nextState.round, nextState.lakeHolder !== null)) {
     nextState.phase = 'lake';
   } else {
     nextState.phase = 'proposing';
   }
 
-  if (nextState.evilWins >= 3) {
-    nextState.phase = 'finished';
-    nextState.winner = 'evil';
-  } else if (nextState.goodWins >= 3) {
-    const hasAssassin = players.some(p => p.role === 'assassin');
-    if (hasAssassin) {
-      nextState.phase = 'assassination';
-    } else {
-      nextState.phase = 'finished';
-      nextState.winner = 'good';
-    }
-  }
-  
   return nextState;
 }
 

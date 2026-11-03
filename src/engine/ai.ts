@@ -150,7 +150,7 @@ export function aiPlayCard(state: GameState, aiPlayer: Player): 'success' | 'fai
   return 'fail';
 }
 
-export function aiAssassinate(state: GameState, assassin: Player, players: Player[]): number {
+export function aiAssassinate(_state: GameState, _assassin: Player, players: Player[]): number {
   // Good players pool (excl self since Assassin is evil anyway)
   const validTargets = players.filter(p => ROLE_SIDE[p.role] === 'good');
   // AI picks a random Good player for now until M4 LLM Logic

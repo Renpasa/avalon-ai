@@ -3,19 +3,32 @@ import type { Player, GameConfig } from '../types/avalon';
 import type { GameState } from '../types/game';
 import { buildSinglePrompt, buildBatchPrompt, parseRobustJson, type LLMResponse, type BatchLLMResponse } from './llm';
 import { MISSION_SIZES } from '../types/game';
-
+import { aiProposeTeam, aiVote, aiPlayCard, aiAssassinate } from './ai';
 type ActionType = 'propose' | 'vote' | 'mission' | 'assassinate';
 
-interface QueuedTask {
-  type: 'single' | 'batch';
+interface SingleTask {
+  type: 'single';
   targets: Player[];
   state: GameState;
   actionRequired: ActionType;
   allPlayers: Player[];
   config: GameConfig;
-  resolve: (value: any) => void;
-  reject: (reason: any) => void;
+  resolve: (value: LLMResponse) => void;
+  reject: (reason: unknown) => void;
 }
+
+interface BatchTask {
+  type: 'batch';
+  targets: Player[];
+  state: GameState;
+  actionRequired: ActionType;
+  allPlayers: Player[];
+  config: GameConfig;
+  resolve: (value: BatchLLMResponse) => void;
+  reject: (reason: unknown) => void;
+}
+
+type QueuedTask = SingleTask | BatchTask;
 
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
@@ -25,7 +38,15 @@ export class LlmManager {
   private cooldownMs = 3000;
 
   get useMock() {
-    return sessionStorage.getItem('USE_MOCK_LLM') === 'true';
+    if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
+      return true;
+    }
+    const stored = sessionStorage.getItem('USE_MOCK_LLM');
+    if (stored !== null) {
+      return stored === 'true' || stored === 'fast';
+    }
+    const key = sessionStorage.getItem('avalon_gemini_api_key');
+    return !key;
   }
 
   /** enqueue a single player LLM request */
@@ -61,7 +82,10 @@ export class LlmManager {
 
   private async executeTask(task: QueuedTask) {
     if (this.useMock) {
-      await delay(2000); // UI Loading sensation
+      const isFast = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('USE_MOCK_LLM') === 'fast';
+      if (!isFast) {
+        await delay(300);
+      }
       if (task.type === 'single') {
         task.resolve(this.getDummySingle(task));
       } else {
@@ -82,7 +106,7 @@ export class LlmManager {
 
       const prompt = task.type === 'single'
         ? buildSinglePrompt(task.targets[0], task.state, task.actionRequired, task.allPlayers, task.config)
-        : buildBatchPrompt(task.targets, task.state, task.actionRequired, task.allPlayers, task.config);
+        : buildBatchPrompt(task.targets, task.state, task.actionRequired, task.allPlayers);
 
       const maxRetries = 3;
       for (let i = 0; i <= maxRetries; i++) {
@@ -98,8 +122,9 @@ export class LlmManager {
             task.resolve(data);
           }
           return; // Success, exit retry loop
-        } catch (err: any) {
-          const isRateLimit = err?.message?.includes('429') || err?.status === 429;
+        } catch (err: unknown) {
+          const errObj = err as { message?: string; status?: number };
+          const isRateLimit = errObj?.message?.includes('429') || errObj?.status === 429;
           if (isRateLimit && i < maxRetries) {
             console.warn(`[LlmManager] 429 Rate Limit hit. Retrying in ${60 * (i + 1)}s...`);
             await delay(60000 * (i + 1));
@@ -118,14 +143,16 @@ export class LlmManager {
   private getDummySingle(task: QueuedTask): LLMResponse {
     const p = task.targets[0];
     const teamRequired = MISSION_SIZES[task.config.playerCount]?.[task.state.round] || 2;
+    const targetId = aiAssassinate(task.state, p, task.allPlayers);
+    const proposed = aiProposeTeam(task.state, p.id, teamRequired);
     return {
-      thoughts: "[Mock Mode] 我是一段被模擬出來的思考邏輯。",
+      thoughts: `[Mock Mode] 我是 ${p.name}，根據目前局勢進行決策。`,
       chat: `[Mock Mode] 我是 ${p.name}，這是模擬的發言！`,
       action: {
-        vote: true,
-        propose: Array.from({ length: teamRequired }, (_, i) => task.allPlayers[i].id),
-        mission: 'success',
-        assassinate: task.allPlayers.find(x => x.id !== p.id)?.id || 0
+        vote: aiVote(task.state, p, task.state.proposedTeam),
+        propose: proposed,
+        mission: aiPlayCard(task.state, p),
+        assassinate: targetId,
       }
     };
   }
@@ -135,10 +162,10 @@ export class LlmManager {
       responses: task.targets.map((p, idx) => ({
         playerId: p.id,
         thoughts: `[Mock Mode] ${p.name} 的模擬思考。`,
-        chat: idx % 2 === 0 ? `[Mock Mode] 我是 ${p.name}，我是好人！` : null, // mix of chat and silence
+        chat: idx % 2 === 0 ? `[Mock Mode] 我是 ${p.name}，我是好人！` : null,
         action: {
-          vote: Math.random() > 0.5,
-          mission: p.side === 'good' ? 'success' : 'fail'
+          vote: aiVote(task.state, p, task.state.proposedTeam),
+          mission: aiPlayCard(task.state, p),
         }
       }))
     };
