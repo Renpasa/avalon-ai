@@ -20,6 +20,7 @@ export function createInitialGameState(config: GameConfig, players: Player[]): G
     lakeHolder: config.useLakeOfAvalon ? (leaderIndex + 1) % config.playerCount : null,
     lakeHistory: [], // The holder is NOT inspected yet
     winner: null,
+    assassination: null,
     gameHistory: [],
     trustMatrix: initializeTrustMatrix(players),
     chatHistory: [],
@@ -132,10 +133,19 @@ export function executeMission(state: GameState, cards: ('success' | 'fail')[], 
   };
   
   const winner = checkWinCondition(nextState);
-  if (winner) {
+  if (winner === 'evil') {
     return { ...nextState, winner, phase: 'finished' };
   }
-  
+  if (winner === 'good') {
+    // Avalon's third successful quest does not end the game while an Assassin
+    // is alive: the Assassin gets one final attempt to kill Merlin.
+    const hasAssassin = players.some(p => p.role === 'assassin');
+    if (hasAssassin) {
+      return { ...nextState, phase: 'assassination' };
+    }
+    return { ...nextState, winner, phase: 'finished' };
+  }
+
   return resolveRound(nextState, config, players);
 }
 
@@ -181,11 +191,17 @@ export function resolveAssassination(state: GameState, targetId: number, players
   if (state.phase !== 'assassination') return state;
   const target = players.find(p => p.id === targetId);
   const isMerlin = target?.role === 'merlin';
-  
+  const assassin = players.find(p => p.role === 'assassin');
+
   return {
     ...state,
     phase: 'finished',
     winner: isMerlin ? 'evil' : 'good',
+    assassination: {
+      assassinId: assassin?.id ?? -1,
+      targetId,
+      hitMerlin: isMerlin,
+    },
   };
 }
 

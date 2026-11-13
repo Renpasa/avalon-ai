@@ -48,6 +48,11 @@ export interface GameState {
 
   // End game
   winner: Side | null;
+  assassination: {
+    assassinId: number;
+    targetId: number;
+    hitMerlin: boolean;
+  } | null;
 
   // Milestone 3: AI Memory & Logs
   gameHistory: GameActionEvent[];
