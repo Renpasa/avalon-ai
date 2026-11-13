@@ -238,7 +238,9 @@ export default function GameBoard({ players, config, onRestart }: Props) {
         ? `刺客 ${assassin?.name ?? '?'} 成功刺殺了梅林 ${target?.name ?? '?'}，邪惡陣營逆轉獲勝。`
         : `刺客 ${assassin?.name ?? '?'} 選擇了 ${target?.name ?? '?'}，但沒有刺中梅林；正義陣營守住聖杯。`
       : state.winner === 'evil'
-        ? '邪惡陣營完成 3 次任務破壞，取得勝利。'
+        ? state.rejectCount >= 5
+          ? '連續 5 次否決提案，邪惡陣營控制局面獲勝。'
+          : '邪惡陣營完成 3 次任務破壞，取得勝利。'
         : '正義陣營完成 3 次任務，取得勝利。';
     const successes = state.missionResults.filter(r => r === 'success').length;
     const failures = state.missionResults.filter(r => r === 'fail').length;
