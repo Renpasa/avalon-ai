@@ -227,6 +227,24 @@ export default function GameBoard({ players, config, onRestart }: Props) {
   };
 
   if (state.phase === 'finished') {
+    const assassin = state.assassination
+      ? players.find(p => p.id === state.assassination!.assassinId)
+      : null;
+    const target = state.assassination
+      ? players.find(p => p.id === state.assassination!.targetId)
+      : null;
+    const finishReason = state.assassination
+      ? state.assassination.hitMerlin
+        ? `刺客 ${assassin?.name ?? '?'} 成功刺殺了梅林 ${target?.name ?? '?'}，邪惡陣營逆轉獲勝。`
+        : `刺客 ${assassin?.name ?? '?'} 選擇了 ${target?.name ?? '?'}，但沒有刺中梅林；正義陣營守住聖杯。`
+      : state.winner === 'evil'
+        ? state.rejectCount >= 5
+          ? '連續 5 次否決提案，邪惡陣營控制局面獲勝。'
+          : '邪惡陣營完成 3 次任務破壞，取得勝利。'
+        : '正義陣營完成 3 次任務，取得勝利。';
+    const successes = state.missionResults.filter(r => r === 'success').length;
+    const failures = state.missionResults.filter(r => r === 'fail').length;
+
     return (
       <div className="h-screen flex flex-col bg-zinc-950 text-slate-200 overflow-hidden font-serif">
         <div className="flex-1 flex overflow-hidden">
@@ -246,6 +264,12 @@ export default function GameBoard({ players, config, onRestart }: Props) {
                     </div>
                   )}
                 </div>
+                <p className="max-w-2xl mx-auto text-sm font-medium text-slate-400 leading-relaxed">
+                  {finishReason}
+                </p>
+                <p className="text-xs font-black text-slate-600 uppercase tracking-[0.3em]">
+                  任務結算 · {successes} 成功 / {failures} 失敗
+                </p>
              </div>
 
              <div className="max-w-4xl mx-auto space-y-6">
